@@ -8,7 +8,6 @@ our @ISA = qw( Operator );
 
 sub apply {
 	my ($self, $exp) = @_;
-	printf "ClearHistoryOperator->apply(%s)\n", $exp;
 	my $model = $self->{_model};
 	$model->clear_history();
 }
