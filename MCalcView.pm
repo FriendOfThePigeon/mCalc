@@ -169,6 +169,10 @@ sub make_window {
 	$self->{_stack} = $list2;
 	$self->{_stack_scroll} = $scroll2;
 
+	my $hbox2;
+	$hbox2 = Gtk2::HBox->new(FALSE, 9);
+	$vbox->pack_start($hbox2, FALSE, TRUE, 0);
+
 	my $entry;
 	$entry = Gtk2::Entry->new();
 	my $edited_handler = sub {
@@ -179,29 +183,19 @@ sub make_window {
 		$entry->signal_connect($sig => $edited_handler);
 	}
 	$entry->set_property('activates-default' => 1);
-	$vbox->pack_start($entry, FALSE, FALSE, 0);
+	$hbox2->pack_start($entry, TRUE, TRUE, 0);
 	$self->{_entry} = $entry;
 
-	my $a2 = Gtk2::Alignment->new(0.5, 0.5, 0.2, 0.2);
-	$vbox->pack_start($a2, FALSE, TRUE, 0);
-
-	my $hbox = Gtk2::HBox->new(FALSE, 9);
-	$a2->add($hbox);
-	
 	my $change_btn = Gtk2::Button->new_with_label("Enter");
 	my $change_handler = sub {
 		my ($source) = @_;
 		$self->enter_activated($source);
 	};
 	$change_btn->signal_connect("clicked" => $change_handler);
-	$hbox->pack_start($change_btn, FALSE, TRUE, 0);
+	$hbox2->pack_start($change_btn, FALSE, TRUE, 0);
 	$self->{_change_button} = $change_btn;
 	$change_btn->set_flags('GTK_CAN_DEFAULT');
 	$change_btn->grab_default();
-
-	my $status = Gtk2::Label->new('');
-	$hbox->pack_start($status, FALSE, TRUE, 0);
-	$self->{_status} = $status;
 
 	$self->{_wnd} = $wnd;
 }
