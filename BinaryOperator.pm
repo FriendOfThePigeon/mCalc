@@ -6,6 +6,10 @@ use Operator;
 
 our @ISA = qw( Operator );
 
+sub get_symbol {
+	return '?';
+}
+
 sub apply {
 	my ($self, $value) = @_;
 	my $model = $self->{_model};
@@ -18,7 +22,8 @@ sub apply {
 		return;
 	}
 	my $result = $self->binary_apply($value1, $value2);
-	$model->push_result($result);
+	my $description = sprintf('%s %s %s', $value2, $self->get_symbol(), $value1);
+	$model->push_result($result, $description);
 }
 
 1;

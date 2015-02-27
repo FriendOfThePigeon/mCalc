@@ -63,12 +63,16 @@ sub on_auto {
 }
 
 sub list_entry_selected {
-	my ($self, $sl, $selection) = @_;
+	my ($self, $sl, $selection, $column, $modify) = @_;
 	my ($model, $iter) = $selection->get_selected();
+	$column = 0 unless defined($column);
 	if ($iter) {
-		my $description = $model->get($iter, 0);
+		my $item = $model->get($iter, $column);
+		if (defined($modify)) {
+			$item = $modify->($item);
+		} 
 		$self->set_auto(1);
-		$self->{_entry}->set_text($description);
+		$self->{_entry}->set_text($item);
 		$self->set_auto(0);
 	}
 }
@@ -141,12 +145,17 @@ sub make_window {
 	$hbox1->pack_end($scroll1, TRUE, TRUE, 0);
 
 	my $list1;
-	$list1 = Gtk2::SimpleList->new('History' => 'text');
-	my $select_handler = sub {
-		my ($source) = @_;
-		$self->list_entry_selected($list1, $source);
+	$list1 = Gtk2::SimpleList->new('History' => 'text', '' => 'text');
+	my $trim_history_entry = sub {
+		my ($input) = @_;
+		$input =~ s/^= //;
+		return $input;
 	};
-	$list1->get_selection->signal_connect (changed => $select_handler);
+	my $select_history_handler = sub {
+		my ($source) = @_;
+		$self->list_entry_selected($list1, $source, 1, $trim_history_entry);
+	};
+	$list1->get_selection->signal_connect (changed => $select_history_handler);
 	my $a2 = Gtk2::Alignment->new(0, 1, 1, 0);
 	$a2->add($list1);
 	$scroll1->add_with_viewport($a2);
@@ -205,7 +214,11 @@ sub populate_list {
 	my $list_data = $self->{$list}->{data};
     @$list_data = ( ); # Empty list
 	for my $item (@$items) {
-		push @$list_data, [ $item ];
+		if (ref($item) eq 'ARRAY') {
+			push @$list_data, $item;
+		} else {
+			push @$list_data, [ $item ];
+		}
 	}
 	if ($scroll) {
 		my $sw = $self->{"${list}_scroll"};
@@ -217,7 +230,11 @@ sub populate_list {
 sub append_list {
 	my ($self, $list, $item, $scroll) = @_;
 	my $list_data = $self->{$list}->{data};
-	push @$list_data, [ $item ];
+	if (ref($item) eq 'ARRAY') {
+		push @$list_data, $item;
+	} else {
+		push @$list_data, [ $item ];
+	}
 	if ($scroll) {
 		my $sw = $self->{"${list}_scroll"};
 		my $adj = $sw->get_vadjustment();
@@ -234,9 +251,9 @@ sub update {
 }
 
 sub update_result {
-	my ($self, $result) = @_;
+	my ($self, $result, $description) = @_;
 	$self->set_auto(1);
-	$self->append_list('_history', $result, 1);
+	$self->append_list('_history', [$result, $description], 1);
 	$self->set_auto(0);
 }
 
@@ -269,7 +286,7 @@ sub event {
 		} elsif ($aspect eq 'push-stack') {
 			$self->push_stack();
 		} elsif ($aspect eq 'result') {
-			$self->update_result($data[0]);
+			$self->update_result($data[1], sprintf("= %s", $data[0]));
 		} elsif ($aspect eq 'pop-stack') {
 			$self->pop_stack($data[0]);
 		}

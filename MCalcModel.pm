@@ -53,9 +53,9 @@ sub initialize {
 }
 
 sub result {
-	my ($self, $value) = @_;
-	push @{ $self->{_history} }, $value;
-	$self->activate('result', $value, $self->{_history});
+	my ($self, $value, $description) = @_;
+	push @{ $self->{_history} }, [ $value, $description ];
+	$self->activate('result', $value, $description, $self->{_history});
 }
 
 sub push {
@@ -66,8 +66,8 @@ sub push {
 }
 
 sub push_result {
-	my ($self, $value) = @_;
-	$self->result($value);
+	my ($self, $value, $description) = @_;
+	$self->result($value, $description);
 	$self->push($value);
 }
 
