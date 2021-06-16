@@ -20,6 +20,9 @@ class Stack:
     def __str__(self):
         return str(self._items)
 
+    def as_list(self):
+        return list(self._items)
+
 
 class Evaluator:
     def __init__(self, namespace, fixed_args):
