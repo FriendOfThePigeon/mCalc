@@ -8,6 +8,16 @@ class Sym:
     def __init__(self, value):
         self.value = value
 
+    def __str__(self):
+        return '$' + self.value
+
+class WS:
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return '_'
+
 class Namespace:
     def get(self, key):
         raise NotImplementedError()
