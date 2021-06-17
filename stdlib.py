@@ -29,6 +29,7 @@ def rot3(namespace, stack):
 stdlib = {
     '+': from_operator(operator.add),
     '*': from_operator(operator.mul),
+    'x': from_operator(operator.mul),
     '-': from_operator(operator.sub),
     '^': from_operator(operator.pow),
     '/': from_operator(operator.truediv),
