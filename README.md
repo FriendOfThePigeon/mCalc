@@ -33,3 +33,4 @@ In the following, (1) refers to the first value popped from the stack; (2) the s
 | d        | Remove the first value from the stack and drop (discard) it | (2) (1) -> (2) |
 | .        | Duplicate the first value on the stack | (1) -> (1) (1) | 
 | @        | Rotate the first 3 values on the stack | (3) (2) (1) -> (2) (1) (3) |
+| _        | Floor (discard fractional part) | 1.3 -> 1.0 |

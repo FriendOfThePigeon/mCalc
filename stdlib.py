@@ -1,9 +1,16 @@
 import operator
+import math
 
-def from_operator(op):
+def from_binary_operator(op):
     def result(namespace, stack):
         one, two = stack.pop(), stack.pop()
         stack.push(op(two, one))
+
+    return result
+
+def from_unary_operator(op):
+    def result(namespace, stack):
+        stack.push(op(stack.pop()))
 
     return result
 
@@ -27,13 +34,13 @@ def rot3(namespace, stack):
     stack.push(three)
 
 stdlib = {
-    '+': from_operator(operator.add),
-    '*': from_operator(operator.mul),
-    'x': from_operator(operator.mul),
-    '-': from_operator(operator.sub),
-    '^': from_operator(operator.pow),
-    '/': from_operator(operator.truediv),
-    # '//': from_operator(operator.floordiv),
+    '+': from_binary_operator(operator.add),
+    '*': from_binary_operator(operator.mul),
+    'x': from_binary_operator(operator.mul),
+    '-': from_binary_operator(operator.sub),
+    '^': from_binary_operator(operator.pow),
+    '/': from_binary_operator(operator.truediv),
+    '_': from_unary_operator(math.floor),
     '.': dup,
     '\\': swap,
     '@': rot3,
