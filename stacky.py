@@ -7,6 +7,12 @@ class NotAFunction(Exception):
 class Undefined(Exception):
     pass
 
+class EvalError(Exception):
+    pass
+
+class NothingToPop(EvalError):
+    pass
+
 class Stack:
     def __init__(self):
         self._items = list()
@@ -15,7 +21,10 @@ class Stack:
         self._items.insert(0, item)
 
     def pop(self):
-        return self._items.pop(0)
+        try:
+            return self._items.pop(0)
+        except IndexError:
+            raise NothingToPop()
 
     def __str__(self):
         return str(self.as_list())
