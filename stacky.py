@@ -13,6 +13,9 @@ class EvalError(Exception):
 class NothingToPop(EvalError):
     pass
 
+class Unhandled(EvalError):
+    pass
+
 class Stack:
     def __init__(self):
         self._items = list()
@@ -56,7 +59,10 @@ class Evaluator:
                 continue
             evald = self._eval(item)
             if callable(evald):
-                evald(self.namespace, stack, *self.fixed_args)
+                try:
+                    evald(self.namespace, stack, *self.fixed_args)
+                except Exception as ex:
+                    raise Unhandled(ex)
             else:
                 stack.push(evald)
         return stack

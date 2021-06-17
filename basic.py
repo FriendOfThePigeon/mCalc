@@ -11,6 +11,13 @@ class Sym:
     def __str__(self):
         return '$' + self.value
 
+class Punc:
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return '#' + self.value
+
 class WS:
     def __init__(self, value):
         self.value = value

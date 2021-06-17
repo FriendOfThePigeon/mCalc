@@ -1,4 +1,4 @@
-from basic import Sym, WS
+from basic import Sym, WS, Punc
 from parsy import alt, decimal_digit, regex, seq, string
 
 def make_number(sign, int_part, frac_part):
@@ -9,8 +9,12 @@ number_literal = seq(string('-').optional(), decimal_digit.at_least(1).concat(),
 
 string_literal = string('"') >> regex(r'[^"]*') << string('"')
 
-operator = regex(r'[+*^/.\\@d_-]').map(Sym)
+operator = regex(r'[]+*^/.\\@d_:!-]').map(Sym)
+
+func = regex(r'sin|cos|tan|asin|acos|atan|deg|rad|pi|e|ln|log').map(Sym)
+
+punc = regex(r'[\[]').map(Punc)
 
 whitespace = string(' ').at_least(1).map(WS)
 
-stacky_parser = alt(number_literal, operator, whitespace).many()
+stacky_parser = alt(number_literal, operator, punc, func, whitespace).many()
