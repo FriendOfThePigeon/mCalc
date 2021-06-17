@@ -1,2 +1,6 @@
 *.sw[op]
 recycle
+__pycache__
+test.py
+output.svg
+local
