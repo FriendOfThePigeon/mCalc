@@ -8,7 +8,7 @@ from stacky import Evaluator
 import stdlib
 
 def print_result(result):
-    return ' '.join(str(each) for each in result)
+    return ' '.join(str(each) for each in result.as_list())
 
 def debug(msg, nl=True):
     sys.stderr.write(msg)
@@ -22,7 +22,7 @@ def update_label(label):
         buffer.remove_tag_by_name('error', buffer.get_start_iter(), buffer.get_end_iter())
         try:
             parsed = stacky_parser.parse(expr)
-            label.set_text(print_result(Evaluator(stdlib.stdlib, []).evaluate(parsed).as_list()))
+            label.set_text(print_result(Evaluator(stdlib.stdlib, []).evaluate(parsed)))
         except ParseError as ex:
             buffer.apply_tag_by_name('error', buffer.get_iter_at_offset(ex.index), buffer.get_end_iter())
 

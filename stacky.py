@@ -18,10 +18,10 @@ class Stack:
         return self._items.pop(0)
 
     def __str__(self):
-        return str(self._items)
+        return str(self.as_list())
 
     def as_list(self):
-        return list(self._items)
+        return list(reversed(self._items))
 
 
 class Evaluator:
