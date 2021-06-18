@@ -1,3 +1,5 @@
+#!/bin/env python3
+
 import sys
 import gi
 gi.require_version("Gtk", "3.0")
@@ -59,9 +61,10 @@ def add_row(grid, rows):
             rows[-1][1].grab_focus()
             return
     frame = Gtk.Frame()
+    frame.set_hexpand(True)
     set_style_class(frame, 'expr', True)
     view = Gtk.TextView()
-    view.set_hexpand(True)
+    view.set_justification(Gtk.Justification.CENTER)
     label = Gtk.Label()
     label.set_selectable(True)
     label.set_line_wrap(True)
@@ -76,8 +79,9 @@ def add_row(grid, rows):
     frame.add(view)
     grid.attach(frame, 0, index, 1, 1)
     grid.attach(label, 1, index, 1, 1)
-    view.set_halign(Gtk.Align.CENTER)
+    view.set_halign(Gtk.Align.FILL)
     view.set_valign(Gtk.Align.CENTER)
+    frame.show()
     view.show()
     label.show()
 
