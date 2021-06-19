@@ -35,6 +35,13 @@ class Stack:
     def as_list(self):
         return list(reversed(self._items))
 
+def push_all(lst):
+    def result(namespace, stack):
+        for each in lst:
+            stack.push(each)
+
+    return result
+
 
 class Evaluator:
     def __init__(self, namespace, fixed_args):
@@ -52,7 +59,7 @@ class Evaluator:
         else:
             return item
 
-    def evaluate(self, expr):
+    def evaluate(self, expr, name_result=None):
         stack = Stack()
         for item in expr:
             if isinstance(item, WS):
@@ -65,4 +72,6 @@ class Evaluator:
                     raise Unhandled(ex)
             else:
                 stack.push(evald)
+        if name_result:
+            self.namespace.set(name_result, push_all(stack.as_list()))
         return stack

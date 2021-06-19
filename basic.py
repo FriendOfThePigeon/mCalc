@@ -1,3 +1,5 @@
+from functools import reduce
+
 
 class Point:
     def __init__(self, x, y):
@@ -42,13 +44,13 @@ class Namespace:
         return ChildNamespace(self)
 
 
-class ChildNamespace:
+class ChildNamespace(Namespace):
     def __init__(self, parent):
         self._parent = parent
         self._dict = dict()
 
     def get(self, key):
-        return self._dict[key] if key in self._dict else parent.get(key)
+        return self._dict[key] if key in self._dict else self._parent.get(key)
 
     def _set_where_present(self, key, value):
         if key in self._dict:
@@ -61,7 +63,7 @@ class ChildNamespace:
         if not ns:
             self._dict[key] = value
             
-class BasicNamespace:
+class RootNamespace(Namespace):
     def __init__(self, initial_dict):
         self._dict = initial_dict
 
@@ -80,7 +82,7 @@ class BasicNamespace:
 class RefusedToMutate(Exception):
     pass
 
-class ImmutableNamespace:
+class ImmutableNamespace(Namespace):
     def __init__(self, initial_dict):
         self._dict = initial_dict
 
@@ -93,3 +95,28 @@ class ImmutableNamespace:
     def set(self, key, value):
         raise RefusedToMutate()
         
+def from_binary_operator(op, can_fold=True):
+    def result(namespace, stack):
+        one = stack.pop()
+        if isinstance(one, list) and can_fold:
+            # fold over array
+            stack.push(reduce(op, one[1:], one[0])) 
+        else:
+            two = stack.pop()
+            stack.push(op(two, one))
+
+    return result
+
+def from_unary_operator(op):
+    def result(namespace, stack):
+        item = stack.pop()
+        # map over array; just apply to a scalar
+        stack.push(list(map(op, item)) if isinstance(item, list) else op(item))
+
+    return result
+
+def from_const(const):
+    def result(namespace, stack):
+        stack.push(const)
+
+    return result

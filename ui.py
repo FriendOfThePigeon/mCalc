@@ -8,6 +8,8 @@ from parser import stacky_parser
 from parsy import ParseError
 from stacky import Evaluator, EvalError
 import stdlib
+from string import ascii_uppercase
+from basic import RootNamespace
 
 def print_result(result):
     return ' '.join(str(each) for each in result.as_list())
@@ -25,14 +27,18 @@ def set_style_class(widget, css_class, value):
     elif is_set and not value:
         context.remove_class(css_class)
 
-def update_label(label):
+namespace = RootNamespace(stdlib.stdlib).spawn()
+
+def run_evaluation(label, name, callback):
     def result(buffer):
         expr = get_all_text(buffer)
         buffer.remove_tag_by_name('error', buffer.get_start_iter(), buffer.get_end_iter())
         try:
             parsed = stacky_parser.parse(expr)
-            label.set_text(print_result(Evaluator(stdlib.stdlib, []).evaluate(parsed)))
+            label.set_text(print_result(Evaluator(namespace, []).evaluate(parsed, name_result=name)))
             set_style_class(label, 'evalerror', False)
+            if callback:
+                callback()
         except ParseError as ex:
             buffer.apply_tag_by_name('error', buffer.get_iter_at_offset(ex.index), buffer.get_end_iter())
             set_style_class(label, 'evalerror', True)
@@ -53,6 +59,14 @@ def buffer_insert(grid, rows, signal_name):
         return False
     return result
 
+def attach_label(grid, label, index):
+    def result():
+        if not label.get_parent():
+            grid.attach(label, 2, index, 1, 1)
+            label.show()
+
+    return result
+
 def add_row(grid, rows):
     index = len(rows)
     if rows:
@@ -65,27 +79,29 @@ def add_row(grid, rows):
     set_style_class(frame, 'expr', True)
     view = Gtk.TextView()
     view.set_justification(Gtk.Justification.CENTER)
-    label = Gtk.Label()
-    label.set_selectable(True)
-    label.set_line_wrap(True)
-    label.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
-    label.set_hexpand(True)
-    set_style_class(label, 'result', True)
+    result_label = Gtk.Label()
+    result_label.set_selectable(True)
+    result_label.set_hexpand(True)
+    set_style_class(result_label, 'result', True)
+    name = chr(65 + index)
+    name_label = Gtk.Label.new(name)
+    set_style_class(name_label, 'name', True)
     buffer = view.get_buffer()
     buffer.create_tag(tag_name='error', underline=Pango.Underline.ERROR_LINE, underline_rgba=Gdk.RGBA(1.0, 0, 0, 0))
-    buffer.connect('changed', update_label(label))
+
+    buffer.connect('changed', run_evaluation(result_label, name, attach_label(grid, name_label, index)))
     buffer.connect('insert-text', buffer_insert(grid, rows, 'insert-text'))
 
     frame.add(view)
     grid.attach(frame, 0, index, 1, 1)
-    grid.attach(label, 1, index, 1, 1)
+    grid.attach(result_label, 1, index, 1, 1)
     view.set_halign(Gtk.Align.FILL)
     view.set_valign(Gtk.Align.CENTER)
     frame.show()
     view.show()
-    label.show()
+    result_label.show()
 
-    rows.append((buffer, view, label))
+    rows.append((buffer, view, result_label))
     view.grab_focus()
 
 def setup_styles():
@@ -116,7 +132,7 @@ grid{
     Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), provider, 100)
 
 
-def on_activate(app):
+def app_activate(app):
     win = Gtk.ApplicationWindow(application=app)
     grid = Gtk.Grid()
     grid.set_column_spacing(12)
@@ -135,7 +151,7 @@ def on_activate(app):
 
 def main():
     app = Gtk.Application(application_id='org.gtk.Example')
-    app.connect('activate', on_activate)
+    app.connect('activate', app_activate)
     app.run(None)
 
 if __name__ == '__main__':

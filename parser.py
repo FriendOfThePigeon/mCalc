@@ -13,8 +13,10 @@ operator = regex(r'[]+*^/.\\@d_:!-]').map(Sym)
 
 func = regex(r'sin|cos|tan|asin|acos|atan|deg|rad|pi|e|ln|log').map(Sym)
 
+variable = regex(r'[A-Z]').map(Sym)
+
 punc = regex(r'[\[]').map(Punc)
 
 whitespace = string(' ').at_least(1).map(WS)
 
-stacky_parser = alt(number_literal, operator, punc, func, whitespace).many()
+stacky_parser = alt(number_literal, operator, punc, func, variable, whitespace).many()

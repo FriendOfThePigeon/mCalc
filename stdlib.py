@@ -1,33 +1,6 @@
 import operator
 import math
-from basic import Punc
-from functools import reduce
-
-def from_binary_operator(op, can_fold=True):
-    def result(namespace, stack):
-        one = stack.pop()
-        if isinstance(one, list) and can_fold:
-            # fold over array
-            stack.push(reduce(op, one[1:], one[0])) 
-        else:
-            two = stack.pop()
-            stack.push(op(two, one))
-
-    return result
-
-def from_unary_operator(op):
-    def result(namespace, stack):
-        item = stack.pop()
-        # map over array; just apply to a scalar
-        stack.push(list(map(op, item)) if isinstance(item, list) else op(item))
-
-    return result
-
-def from_const(const):
-    def result(namespace, stack):
-        stack.push(const)
-
-    return result
+from basic import Punc, from_binary_operator, from_unary_operator, from_const
 
 def dup(namespace, stack):
     one = stack.pop()
