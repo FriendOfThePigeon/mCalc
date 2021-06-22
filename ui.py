@@ -50,13 +50,32 @@ def run_evaluation(label, name, callback):
 def get_all_text(buffer):
     return buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), False)
 
-def buffer_insert(grid, rows, signal_name):
-    def result(buffer, location, text, length):
-        if '\n' in text:
-            GObject.signal_stop_emission_by_name(buffer, signal_name)
-            add_row(grid, rows)
+def set_all_text(buffer, text):
+    length = len(text)
+    buffer.set_text(text, length)
+
+def find_window(widget):
+    parent = widget.get_parent()
+    if not parent:
+        return widget
+    return find_window(parent)
+
+def catch_special_keys(grid, rows):
+    def result(text_view, event):
+        if event.hardware_keycode == 24 and (Gdk.ModifierType.CONTROL_MASK & event.state):
+            # Ctrl-Q = close window => quit
+            find_window(grid).close()
             return True
+        elif event.hardware_keycode == 36:
+            # Enter = add new row;
+            # with Shift: copy expression.
+            initial_text = get_all_text(text_view.get_buffer()) if Gdk.ModifierType.SHIFT_MASK & event.state else ''
+            add_row(grid, rows, initial_text=initial_text)
+            return True
+        # debug('group: %s; hardware_keycode: %s; is_modifier: %s; keyval: %s; length: %s; send_event: %s; state: %s; string: %s; time: %s; type: %s' % (event.group, event.hardware_keycode, event.is_modifier, event.keyval, event.length, event.send_event, event.state, event.string, event.time, event.type))
+
         return False
+
     return result
 
 def attach_label(grid, label, index):
@@ -67,7 +86,7 @@ def attach_label(grid, label, index):
 
     return result
 
-def add_row(grid, rows):
+def add_row(grid, rows, initial_text=''):
     index = len(rows)
     if rows:
         # If the last buffer is empty, set the focus there instead of adding a new one.
@@ -89,8 +108,9 @@ def add_row(grid, rows):
     buffer = view.get_buffer()
     buffer.create_tag(tag_name='error', underline=Pango.Underline.ERROR_LINE, underline_rgba=Gdk.RGBA(1.0, 0, 0, 0))
 
+    view.connect('key-press-event', catch_special_keys(grid, rows))
+    view.add_events(Gdk.EventMask.KEY_PRESS_MASK)
     buffer.connect('changed', run_evaluation(result_label, name, attach_label(grid, name_label, index)))
-    buffer.connect('insert-text', buffer_insert(grid, rows, 'insert-text'))
 
     frame.add(view)
     grid.attach(frame, 0, index, 1, 1)
@@ -100,6 +120,9 @@ def add_row(grid, rows):
     frame.show()
     view.show()
     result_label.show()
+
+    if initial_text:
+        set_all_text(buffer, initial_text)
 
     rows.append((buffer, view, result_label))
     view.grab_focus()
